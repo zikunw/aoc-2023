@@ -60,7 +60,7 @@ def findMirror(block):
         if smack == 1:
             col = i
             break
-    return row, col+1     
+    return row, col+1
     
 if __name__ == "__main__":
     main()
