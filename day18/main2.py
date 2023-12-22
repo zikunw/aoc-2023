@@ -1,4 +1,5 @@
 from enum import Enum
+import math
 
 class Direction(Enum):
     LEFT = 0
@@ -37,30 +38,29 @@ def main():
     with open("day18/example.txt", "rb") as f:
         data = f.readlines()
         data = [line.strip().split() for line in data]
+        data = [[str(line[0])[2], int(str(line[1])[2]), str(line[2])] for line in data]
 
-    print(data)
+    #print(data)
     
-    # process data
-    new_data = []
-    for line in data:
-        hexVal = str(line[2])[4:-2]
-        distance = int(hexVal[:-1], 16)
-        if hexVal[-1] == "0":
-            direction = "R"
-        elif hexVal[-1] == "1":
-            direction = "D"
-        elif hexVal[-1] == "2":
-            direction = "L"
-        elif hexVal[-1] == "3":
-            direction = "U"
-        else:
-            raise ValueError("Invalid direction")
-        new_data.append((direction, distance))
-        
-    data = new_data
-    width = 2
-    height = 2
-    map = [[0] * width for _ in range(height)]
+    
+    #process data
+    # new_data = []
+    # for line in data:
+    #     hexVal = str(line[2])[4:-2]
+    #     distance = int(hexVal[:-1], 16)
+    #     if hexVal[-1] == "0":
+    #         direction = "R"
+    #     elif hexVal[-1] == "1":
+    #         direction = "D"
+    #     elif hexVal[-1] == "2":
+    #         direction = "L"
+    #     elif hexVal[-1] == "3":
+    #         direction = "U"
+    #     else:
+    #         raise ValueError("Invalid direction")
+    #     new_data.append((direction, distance))
+    # data = new_data
+    
     # start in the middle
     #start_position = (width // 1, height // 2)
     start_position = [0, 0]
@@ -68,30 +68,66 @@ def main():
     max_y = float("-inf")
     min_x = float("inf")
     min_y = float("inf")
+    up_lines = []
+    down_lines = []
+    points = [(0, 0)]
+    totalDistance = 0
     for line in data:
         if line[0] == "U":
+            up_lines.append((start_position[0], start_position[1]-line[1], start_position[1]))
             start_position[1] -= line[1]
         elif line[0] == "D":
             start_position[1] += line[1]
+            down_lines.append((start_position[0], start_position[1], line[1]+1))
         elif line[0] == "L":
             start_position[0] -= line[1]
         elif line[0] == "R":
             start_position[0] += line[1]
+        else:
+            raise ValueError("Invalid direction")
+        totalDistance += line[1]
+        points.append((start_position[0], start_position[1]))
         max_x = max(max_x, start_position[0])
         max_y = max(max_y, start_position[1])
         min_x = min(min_x, start_position[0])
         min_y = min(min_y, start_position[1])
         
-    print(max_x, max_y, min_x, min_y)
+    # print(max_x, max_y, min_x, min_y)
+    print(up_lines)
+    print(down_lines)
     
-    width = max_x - min_x + 1
-    height = max_y - min_y + 1
+    # draw lines
+    temp = [[0] * (max_x - min_x + 1) for _ in range(max_y - min_y + 1)]
+    for line in up_lines:
+        for i in range(line[2]):
+            temp[line[1]+i][line[0]] = 1
+    for line in down_lines:
+        for i in range(line[2]):
+            temp[line[1]-i][line[0]] = 1
+    printMap(temp)
+
+    # innerArea = shoelaceArea(points)
+    # print(innerArea)
+    # interior = innerArea - math.floor(totalDistance/2) + 1
+    # print(interior)
+    # print(totalDistance + interior)
     
-    map = [[0] * width for _ in range(height)]
+    # my method
+    print(len(up_lines), len(down_lines))
+    s = 0
+    for i in range(min_y, max_y+1):
+        print(i)
+        up_lines = [line for line in up_lines if line[1] <= i <= line[2]]
+        up_lines.sort(key=lambda x: x[0])
+        print(up_lines)
+        down_lines = [line for line in down_lines if line[1] >= i >= line[2]]
+        down_lines.sort(key=lambda x: x[0])
+        print(down_lines)
+        input()
     
-    print("finished processing data")
     
     return 0
+
     
     for line in data:
         direction = chr(ord(line[0]))
@@ -214,6 +250,19 @@ def printMap(map):
                 print("#", end="")
         print()
     print()
+    
+def shoelaceArea(points):
+    # https://en.wikipedia.org/wiki/Shoelace_formula
+    # points is a list of (x, y) tuples
+    # points = [(x1, y1), (x2, y2), ...]
+    # points = [(x1, y1), (x2, y2), ..., (x1, y1)]
+    #print(points)
+    n = len(points)
+    area = 0
+    for i in range(n-1):
+        area += points[i][0] * points[i+1][1] - points[i+1][0] * points[i][1]
+    area += points[n-1][0] * points[0][1] - points[0][0] * points[n-1][1]
+    return abs(area) / 2
 
 if __name__ == '__main__':
     main()

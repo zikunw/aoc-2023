@@ -127,7 +127,8 @@ def main():
             q.put(traversed(x=x, y=y, cost=cost, direction=direction, direction_times=new_direction_times, history=task.history + [f"x{x},y{y},c{cost},d{direction},dt{new_direction_times}"]))
         
         #print(q.queue)
-        #input()
+        # graphHistory(m, task.history)
+        # input()
 
 def graphHistory(m, history):
     for h in history:
